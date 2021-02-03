@@ -1,7 +1,7 @@
 # Formatieve opdracht 1a: algoritmisch programmeren
 # Jonathan Williams (1790472)
 
-import random  # Gebruikt voor pdracht 7
+import random  # Gebruikt voor opdracht 7
 
 
 # Opdracht 1: Pyramide
