@@ -46,12 +46,18 @@ def differ_at():
     a = input("Please enter some text: ")
     b = input("Please enter other text: ")
 
-    n = 0
-    if a and b:
-        while a[n] == b[n]:
-            n += 1
+    if a == b:
+        print("The two strings are equal")
+    else:
+        n = 0
+        if a and b:
+            while n < min(len(a), len(b)) and a[n] == b[n]:
+                n += 1
 
-    print(f"The two strings differ at index {n}")
+        print(f"The two strings differ at index {n}")
+
+
+differ_at()
 
 
 # Opdracht 3: Lijstcheck
