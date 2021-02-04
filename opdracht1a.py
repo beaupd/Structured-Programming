@@ -57,9 +57,6 @@ def differ_at():
         print(f"The two strings differ at index {n}")
 
 
-differ_at()
-
-
 # Opdracht 3: Lijstcheck
 
 # a:
