@@ -1,14 +1,28 @@
 import pygame
+import pygame.freetype
+import sys
+
 import scenes
 
 
 if __name__ == "__main__":
     pygame.init()
-    surface = pygame.display.set_mode((200, 500))
-    pygame.display.set_caption("Trainyard")
+    pygame.freetype.init()
+    surface = pygame.display.set_mode((500, 800))
+    pygame.display.set_caption("Mastermind")
     FPS = pygame.time.Clock()
 
-    while True:
-        events = pygame.event.get()
+    director = scenes.Director()
 
-        if events
+    while True:
+        FPS.tick(60)
+
+        if pygame.event.get(pygame.QUIT):
+            pygame.quit()
+            sys.exit()
+
+        director.scene.handle_events(pygame.event.get())
+        director.scene.update()
+        director.scene.render(surface)
+
+        pygame.display.flip()
