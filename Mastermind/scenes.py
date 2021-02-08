@@ -28,7 +28,7 @@ class Button:                           # Class representing a clickable button
 
     # Draw the button
     def render(self):
-        surface = pygame.Surface((self.rect.width, self.rect.height))
+        surface = pygame.Surface(self.rect.size)
 
         # Background and border
         pygame.draw.rect(surface, tuple([self.color] * 3), pygame.Rect(0, 0, 300, 30), 0)
@@ -44,17 +44,30 @@ class Button:                           # Class representing a clickable button
 class ColorPicker:                      # Class representing a clickable color picker
     def __init__(self):
         self.colors = "RGBYPO"
-        self.selected = 0
+        self.selectedtile = 0
         self.rect = pygame.Rect(0, 650, 500, 150)
 
     def click(self, mousepos):
-        pass
+        # Switch colors
+        tilewidth = self.rect.width // 6
+        for t in range(6):
+            if pygame.Rect(tilewidth * t, 700, tilewidth, 100).collidepoint(mousepos):
+                self.selectedtile = t
 
     def selected(self):
-        return self.colors[self.selected]
+        return self.colors[self.selectedtile]
 
     def render(self):
-        pass
+        surface = pygame.Surface(self.rect.size)
+        surface.fill((220, 220, 220))
+
+        tilewidth = self.rect.width // 6
+        for t in range(6):
+            pygame.draw.rect(surface, get_colors(self.colors[t])[0], pygame.Rect(tilewidth * t, 50, tilewidth + 3, 100))
+
+        pygame.draw.circle(surface, (0, 0, 0), ((self.selectedtile * tilewidth) + tilewidth//2, 100), 15)
+
+        return surface
 
 
 def get_colors(colorlst):
@@ -85,24 +98,47 @@ class Director:                         # Controls the scenes and handles transi
 
 class Scene:                            # Scene base class
     def __init__(self):
-        pass
+        self.director = None
 
     def handle_events(self, events):
-        raise NotImplementedError
+        mousepos = pygame.mouse.get_pos()
+
+        # Each scene is dealing with buttons, so the button handling is done here
+        # Handle mouse hover over buttons
+        for button in self.buttons:
+            button.hover(mousepos)
+
+        # Handle button click
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONUP:
+                for button in self.buttons:
+                    if button.rect.collidepoint(mousepos):
+                        for func in button.funcs:
+                            func(*button.args)
 
     def update(self):
-        raise NotImplementedError
+        pass
 
     def render(self, surface):
-        raise NotImplementedError
+        # Clear screen
+        surface.fill((220, 220, 220))
+
+        # Button rendering
+        for button in self.buttons:
+            surface.blit(button.render(), button.rect.topleft)
+
+    # Used for switching to another scene, can be called by buttons.
+    def switch(self, scene):
+        self.director.switch(Fader(self, scene()))
 
 
 class GameScene(Scene):                 # The class representing the game played by the user
     def __init__(self):
         super().__init__()
         self.info = "Guess a code"
-        self.code = "".join(["RGBYPO"[random.randint(0, 5)] for e in range(4)])  # Generate a code
+        self.code = "".join(["RGBYPO"[random.randint(0, 5)] for _ in range(4)])  # Generate a code
         print(self.code)
+        self.buttons = []
         self.guesses = [
             ("RGBY", (1, 2)),
             ("POPO", (2, 0))
@@ -115,8 +151,7 @@ class GameScene(Scene):                 # The class representing the game played
         pass
 
     def render(self, surface):
-        # Clear screen
-        surface.fill((220, 220, 220))
+        super().render(surface)
 
         # Title
         text, rect = regularfont.render("Mastermind", (0, 0, 0))
@@ -145,48 +180,40 @@ class GameScene(Scene):                 # The class representing the game played
 
 class BotScene(Scene):                  # The class representing the game played by an ai
     def __init__(self):
+        super().__init__()
         pass
 
     def handle_events(self, events):
-        raise NotImplementedError
+        pass
 
     def update(self):
-        raise NotImplementedError
+        pass
 
     def render(self, surface):
-        raise NotImplementedError
+        pass
 
 
 class BotSelectScene(Scene):
     def __init__(self):
+        super().__init__()
         self.buttons = [
             Button(pygame.Rect(100, 600, 300, 30), "Back", [self.switch], [MenuScene])
         ]
+        self.colorpicker = ColorPicker()
 
     def handle_events(self, events):
-        mousepos = pygame.mouse.get_pos()
+        super().handle_events(events)
 
-        # Handle mouse hover over buttons
-        for button in self.buttons:
-            button.hover(mousepos)
-
-        # Handle button click
         for event in events:
             if event.type == pygame.MOUSEBUTTONUP:
-                for button in self.buttons:
-                    if button.rect.collidepoint(mousepos):
-                        for func in button.funcs:
-                            func(*button.args)
+                self.colorpicker.click(pygame.mouse.get_pos())
 
     def update(self):
         pass
 
     def render(self, surface):
-        for button in self.buttons:
-            surface.blit(button.render(), (button.rect.left, button.rect.top))
-
-    def switch(self, scene):
-        self.director.switch(Fader(self, scene()))
+        super().render(surface)
+        surface.blit(self.colorpicker.render(), self.colorpicker.rect.topleft)
 
 
 class MenuScene(Scene):                 # The class representing the main menu
@@ -199,27 +226,10 @@ class MenuScene(Scene):                 # The class representing the main menu
         ]
 
     def handle_events(self, events):
-        mousepos = pygame.mouse.get_pos()
-
-        # Handle mouse hover over buttons
-        for button in self.buttons:
-            button.hover(mousepos)
-
-        # Handle button click
-        for event in events:
-            if event.type == pygame.MOUSEBUTTONUP:
-                for button in self.buttons:
-                    if button.rect.collidepoint(mousepos):
-                        for func in button.funcs:
-                            func(*button.args)
-
-    def update(self):
-        # Not a lot of updating on the menu
-        pass
+        super().handle_events(events)
 
     def render(self, surface):
-        # Clear screen
-        surface.fill((220, 220, 220))
+        super().render(surface)
 
         # Title text
         text, rect = titlefont.render("Mastermind", (0, 0, 0))
@@ -227,17 +237,10 @@ class MenuScene(Scene):                 # The class representing the main menu
         text, rect = regularfont.render("by Jonathan Williams", (0, 0, 0))
         surface.blit(text, (surface.get_width() // 2 - rect.width // 2, 100))
 
-        # Button rendering
-        for button in self.buttons:
-            surface.blit(button.render(), (button.rect.left, button.rect.top))
-
-    # Used for switching to another scene, can be called by buttons.
-    def switch(self, scene):
-        self.director.switch(Fader(self, scene()))
-
 
 class Fader(Scene):                         # Handles fading in and out between scenes
     def __init__(self, prv, nxt):
+        super().__init__()
         self.cur = prv  # The previous scene
         self.nxt = nxt  # The next scene
         self.fadein = True
@@ -246,7 +249,7 @@ class Fader(Scene):                         # Handles fading in and out between 
         self.veil = pygame.Surface(sr.size)
 
     def handle_events(self, events):
-        # The fader is meant to go uninterrupted, so no event handling is done.
+        # The fader is meant to go uninterrupted, so event handling is disabled.
         pass
 
     def update(self):
@@ -262,4 +265,3 @@ class Fader(Scene):                         # Handles fading in and out between 
         pygame.draw.rect(self.veil, (220, 220, 220), surface.get_rect())
         self.veil.set_alpha(self.fade)
         surface.blit(self.veil, (0, 0))
-
