@@ -5,7 +5,7 @@ import sys
 import scenes
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":#prima
     pygame.init()
     pygame.freetype.init()
     surface = pygame.display.set_mode((500, 800))
