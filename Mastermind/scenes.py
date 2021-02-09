@@ -168,7 +168,7 @@ class GameScene(Scene):                 # The class representing the game played
         for i in range(8):
             if i < len(self.guesses):
                 guesscolors = get_colors(self.guesses[i][0])
-                response = ("b" * self.guesses[i][1][0]) + ("w" * self.guesses[i][1][1]) + ("X" * (4 - sum(self.guesses[i][1])))
+                response = ("b" * self.guesses[i][1][0]) + ("w" * self.guesses[i][1][1]) + ("X" * (4 - sum(self.guesses[i][1]))) # snap t niet maar als t werkt
                 responsecolors = get_colors(response)
             else:
                 guesscolors = get_colors("XXXX")
